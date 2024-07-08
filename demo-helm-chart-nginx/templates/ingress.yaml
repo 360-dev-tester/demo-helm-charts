@@ -7,10 +7,17 @@ spec:
   rules:
     - http:
         paths:
-          - path: /
+          - path: /customer
             pathType: Prefix  
             backend:
               service:
-                name: static-web-service
+                name: customer-demo-service
                 port:
-                  number: 80
+                  number: 9090
+          - path: /employee
+            pathType: Prefix  
+            backend:
+              service:
+                name: employee-demo-service
+                port:
+                  number: 9190
