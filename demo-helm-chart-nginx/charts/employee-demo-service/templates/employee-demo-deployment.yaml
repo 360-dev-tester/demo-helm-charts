@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: employee-demo
+  namespace: demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: employee-demo
+  template:
+    metadata:
+      labels:
+        app: employee-demo
+    spec:
+      containers:
+      - name: employee-demo
+        image: demo/employee-demo:0.0.1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 9190

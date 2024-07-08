@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: customer-demo
+  namespace: demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: customer-demo
+  template:
+    metadata:
+      labels:
+        app: customer-demo
+    spec:
+      containers:
+      - name: customer-demo
+        image: demo/customer-demo:0.0.1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 9090
