@@ -16,6 +16,6 @@ spec:
       containers:
       - name: employee-demo
         image: https://hub.docker.com/repositories/360devtester/employee-demo:0.0.1
-        imagePullPolicy: Never
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 9190
