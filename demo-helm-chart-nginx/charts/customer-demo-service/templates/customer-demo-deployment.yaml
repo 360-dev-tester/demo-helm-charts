@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: customer-demo
-        image: demo/customer-demo:0.0.1
+        image: https://hub.docker.com/repositories/360devtester/customer-demo:0.0.1
         imagePullPolicy: Never
         ports:
         - containerPort: 9090
