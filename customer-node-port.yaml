@@ -8,7 +8,7 @@ spec:
     app: customer-demo
   ports:
     - protocol: TCP
-      port: 80         # The port that the service will serve on
+      port: 9090         # The port that the service will serve on
       targetPort: 9090 # The port on the container
       nodePort: 30007  # The port on each node
   type: NodePort
