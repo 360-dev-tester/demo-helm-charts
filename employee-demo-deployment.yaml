@@ -24,3 +24,15 @@ spec:
             cpu: "250m"  # Request 0.25 CPU
           limits:
             cpu: "250m"  # Limit to 0.25 CPU
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 9190
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 9190
+          initialDelaySeconds: 15
+          periodSeconds: 20
