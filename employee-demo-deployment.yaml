@@ -17,9 +17,6 @@ spec:
       - name: employee-demo
         image: 360devtester/employee-demo:0.0.1
         imagePullPolicy: IfNotPresent
-        env:
-        - name: "PORT"
-          value: "9190"
         ports:
         - containerPort: 9190
         resources:
