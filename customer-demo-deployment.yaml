@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: customer-demo
+  namespace: demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: customer-demo
+  template:
+    metadata:
+      labels:
+        app: customer-demo
+    spec:
+      containers:
+      - name: customer-demo
+        image: 360devtester/customer-demo:0.0.1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9090
+        resources:
+          requests:
+            cpu: "250m"  # Request 0.25 CPU
+          limits:
+            cpu: "250m"  # Limit to 0.25 CPU
