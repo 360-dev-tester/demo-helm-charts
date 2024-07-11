@@ -8,7 +8,7 @@ spec:
     app: employee-demo
   ports:
     - protocol: TCP
-      port: 80         # The port that the service will serve on
+      port: 9190         # The port that the service will serve on
       targetPort: 9190 # The port on the container
       nodePort: 30008  # The port on each node
   type: NodePort
