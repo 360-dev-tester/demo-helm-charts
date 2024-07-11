@@ -17,9 +17,6 @@ spec:
       - name: customer-demo
         image: 360devtester/customer-demo:0.0.1
         imagePullPolicy: IfNotPresent
-        env:
-        - name: "PORT"
-          value: "9090"
         ports:
         - containerPort: 9090
         resources:
