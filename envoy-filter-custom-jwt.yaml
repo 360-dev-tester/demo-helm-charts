@@ -1,0 +1,168 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: apigee-remote-filter
+  namespace: demo
+spec:
+  workloadSelector:
+    labels:
+      app: customer-demo
+      #managed-by: apigee
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: SIDECAR_INBOUND
+        listener:
+          filterChain:
+            filter:
+              name: "envoy.filters.network.http_connection_manager"
+              subFilter:
+                name: "envoy.filters.http.router"
+      patch:
+        operation: INSERT_BEFORE
+        value:
+          name: envoy.lua
+          typed_config:
+            "@type": "type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua"
+            inlineCode: |
+              
+              function envoy_on_request(request_handle)
+              
+                  request_handle:logWarn("INSERT_BEFORE operation executed")
+                  authheaders = request_handle:headers()
+                  header_jwt = authheaders:get("jwt")
+                  header_flag = authheaders:get("flag")
+                  header_resource_type = authheaders:get("resource-type")
+                  header_service = authheaders:get("service")
+                  
+                  request_handle:logWarn("jwt " .. header_jwt)
+              
+              
+                  local payload = '{"jwt": "' .. header_jwt .. '"}'
+                  request_handle:logWarn(payload)
+              
+                  local headers, body = request_handle:httpCall(
+                  "lua_cluster",
+                  {
+                    [":method"] = "GET",
+                    [":path"] = "/",
+                    [":authority"] = "nextlabs-enforcer-service.enforcer.svc.cluster.local",
+                    ["Content-Type"] = "application/json",
+                    ["jwt"] = header_jwt,
+                    ["resource-type"] = header_resource_type,
+                    ["service"] = header_service,
+                    ["flag"] = header_flag
+              
+                  },
+                  payload,
+                  10000)
+              
+              
+                  request_handle:logWarn("HTTP status=" .. headers[":status"] )
+              
+                  if headers[":status"] ~= "200" then
+                    request_handle:logErr("Auth failed: status=" .. headers[":status"] )
+                    request_handle:respond({[":status"] = headers[":status"]}, "Access denied - enforced by NXL ISTIO ENFORCER"  )
+              
+                    -- request_handle:respond(
+                    --  {
+                    --    [":status"] = "403",
+                    --    ["content-type"] = "application/json;charset=UTF-8"
+                    --  },
+                    --  requestBodyData)
+              
+                    return
+                  end 
+              
+                  if headers[":status"] == "200" then
+                    request_handle:logWarn("Success response: status=" .. headers[":status"] )
+                    
+                    -- Store the res_body in dynamic metadata
+                    request_handle:streamInfo():dynamicMetadata():set("nxl.enforcer", "res_body", body)
+              
+                    return
+                  end 
+              end
+              
+              function envoy_on_response(response_handle)
+              
+                  response_handle:logWarn("envoy_on_response")
+              
+                  -- Retrieve the stored res_body
+                  local res_body = response_handle:streamInfo():dynamicMetadata():get("nxl.enforcer", "res_body")
+              
+                  -- Retrieve the original response body
+                  local response_body = response_handle:body()
+              
+                  if response_body ~= nil then
+                      local original_body = response_body:getBytes(0, response_body:length())
+                      if original_body ~= nil then
+                          -- Log the original response
+                          response_handle:logWarn(string.format("Original Response: %s", original_body))
+              
+                          -- local request_handle = response_handle:streamInfo():previousRequestHandle()
+                          local payload = '{"enforcerResult": ' .. res_body.res_body .. ', "customer": ' ..original_body .. '}'
+                          
+                          -- Construct the payload for the second API call
+                          -- local payload = json_encode({ obligations = res_body, customer = original_body })
+      
+                          response_handle:logWarn("envoy_on_response........")
+                          response_handle:logWarn(payload)
+              
+                          local headers, body = response_handle:httpCall(
+                          "lua_cluster",
+                          {
+                              [":method"] = "POST",
+                              [":path"] = "/obligation/evaluate",
+                              [":authority"] = "nextlabs-enforcer-service.enforcer.svc.cluster.local",
+                              ["Content-Type"] = "application/json"
+                          },
+                          payload,
+                          10000)
+              
+                          response_handle:logErr("HTTP status=" .. headers[":status"] )
+              
+                          if headers[":status"] == "200" then
+                            response_handle:logWarn("envoy_on_response success: status=" .. headers[":status"] )
+                            response_handle:body():setBytes(body)
+                          return
+                          end 
+                          if headers[":status"] ~= "200" then
+                            response_handle:logErr("envoy_on_response failed: status=" .. headers[":status"] )
+                            response_handle:body():setBytes("Error response")
+                          return
+                          end 
+              
+                          -- Modify the response body
+                          -- response_handle:body():setBytes("Modified body content")
+                      else
+                          response_handle:logWarn("Failed to retrieve original response body")
+                      end
+                  else
+                      response_handle:logWarn("No response body found")
+                  end
+              end
+
+    # The second patch adds the cluster that is referenced by the lua code
+    # cds match is omitted as a new cluster is being added
+    - applyTo: CLUSTER
+      match:
+        context: SIDECAR_OUTBOUND
+      patch:
+        operation: ADD
+        value: # cluster specification
+          name: "lua_cluster"
+          type: STRICT_DNS
+          connect_timeout: 2s
+          lb_policy: ROUND_ROBIN
+          load_assignment:
+            cluster_name: lua_cluster
+            endpoints:
+              - lb_endpoints:
+                  - endpoint:
+                      address:
+                        socket_address:
+                          protocol: TCP
+                          address: "nextlabs-enforcer-service.enforcer.svc.cluster.local"
+                          port_value: 7080
+
