@@ -21,20 +21,6 @@ spec:
           env:
             - name: "PORT"
               value: "9090"
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 9090
-            initialDelaySeconds: 10
-            periodSeconds: 10
-            timeoutSeconds: 5
-          readinessProbe:
-            httpGet:
-              path: /health
-              port: 9090
-            initialDelaySeconds: 15
-            periodSeconds: 10
-            timeoutSeconds: 5
           imagePullPolicy: IfNotPresent
           resources:
             requests:
