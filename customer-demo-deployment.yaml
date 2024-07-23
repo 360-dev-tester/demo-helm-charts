@@ -14,30 +14,30 @@ spec:
         app: customer-demo
     spec:
       containers:
-      - name: customer-demo
-        image: 360devtester/customer-demo:0.0.1
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 9090
+        - name: customer-demo
+          image: 360devtester/customer-demo:0.0.1
+          ports:
+            - containerPort: 9090
+          env:
+            - name: "PORT"
+              value: "9090"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9090
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 5
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 9090
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 9090
             initialDelaySeconds: 15
             periodSeconds: 10
             timeoutSeconds: 5
-        imagePullPolicy: IfNotPresent
-        env:
-        - name: "PORT"
-          value: "9090"
-        ports:
-        - containerPort: 9090
-        resources:
-          requests:
-            cpu: "250m"  # Request 0.25 CPU
-          limits:
-            cpu: "250m"  # Limit to 0.25 CPU
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              cpu: "250m"  # Request 0.25 CPU
+            limits:
+              cpu: "250m"  # Limit to 0.25 CPU
