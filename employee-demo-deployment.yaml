@@ -16,19 +16,19 @@ spec:
       containers:
       - name: employee-demo
         image: 360devtester/employee-demo:0.0.1
-        livenessProbe:  # Liveness probe configuration
+        livenessProbe:
           httpGet:
             path: /health
-            port: 9190  # Port where your application listens
-            initialDelaySeconds: 15  # Wait 15 seconds before checks
-            periodSeconds: 20  # Check every 20 seconds
-            timeoutSeconds: 5  # Maximum response time for a healthy check
-        readinessProbe:  # Readiness probe configuration (optional)
+            port: 9190
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+        readinessProbe:
           httpGet:
-            path: /health  # Path to your readiness endpoint (optional)
-            port: 9190  # Port where your application listens (optional)
-            initialDelaySeconds: 30  # Wait 30 seconds before checks (optional)
-            periodSeconds: 10  # Check every 10 seconds (optional)
+            path: /health
+            port: 9190
+            initialDelaySeconds: 15
+            periodSeconds: 10
             timeoutSeconds: 5
         imagePullPolicy: IfNotPresent
         ports:
