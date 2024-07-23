@@ -16,23 +16,23 @@ spec:
       containers:
       - name: employee-demo
         image: 360devtester/employee-demo:0.0.1
+        ports:
+        - containerPort: 9190
         livenessProbe:
           httpGet:
             path: /health
             port: 9190
-            initialDelaySeconds: 10
-            periodSeconds: 10
-            timeoutSeconds: 5
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
         readinessProbe:
           httpGet:
             path: /health
             port: 9190
-            initialDelaySeconds: 15
-            periodSeconds: 10
-            timeoutSeconds: 5
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 5
         imagePullPolicy: IfNotPresent
-        ports:
-        - containerPort: 9190
         resources:
           requests:
             cpu: "250m"  # Request 0.25 CPU
