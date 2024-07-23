@@ -18,7 +18,7 @@ spec:
         image: 360devtester/employee-demo:0.0.1
         ports:
         - containerPort: 9190
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         resources:
           requests:
             cpu: "250m"  # Request 0.25 CPU
